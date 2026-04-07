@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>氣泡排序法</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .algorithm {
+            background-color: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #555;
+        }
+        .complexity {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .steps {
+            margin: 10px 0;
+        }
+        .array-display {
+            font-family: monospace;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .highlight {
+            background-color: yellow;
+        }
+        a {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #007bff;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>氣泡排序法 (Bubble Sort)</h1>
+    <div class="algorithm">
+        <p><strong>原理：</strong>氣泡排序是一種簡單的排序算法。它重複地走訪要排序的數列，一次比較兩個元素，如果它們的順序錯誤就把它們交換過來。走訪數列的工作是重複地進行直到沒有再需要交換，也就是說該數列已經排序完成。</p>
+        <div class="steps">
+            <strong>操作步驟：</strong>
+            <ol>
+                <li>從數列的第一個元素開始，比較相鄰的元素。</li>
+                <li>如果第一個比第二個大，就交換它們兩個。</li>
+                <li>對每一對相鄰元素做同樣的工作，從開始第一對到結尾的最後一對。</li>
+                <li>重複以上步驟，直到整個數列排序完成。</li>
+            </ol>
+        </div>
+        <div class="complexity">
+            <strong>時間複雜度：</strong> 最壞情況 O(n²)，平均情況 O(n²)，最佳情況 O(n)<br>
+            <strong>空間複雜度：</strong> O(1)
+        </div>
+        <div class="array-display" id="bubble-array">[5, 3, 8, 4, 2]</div>
+        <button onclick="startBubbleSort()">開始排序</button>
+        <button onclick="nextBubbleStep()">下一步</button>
+        <button onclick="resetBubble()">重置</button>
+    </div>
+    <a href="index.html">返回主頁</a>
+
+    <script>
+        // 氣泡排序
+        let bubbleArray = [5, 3, 8, 4, 2];
+        let bubbleStep = 0;
+        let bubbleI = 0, bubbleJ = 0;
+
+        function displayArray(array, elementId, highlightIndices = []) {
+            const display = document.getElementById(elementId);
+            display.innerHTML = array.map((val, idx) => 
+                highlightIndices.includes(idx) ? `<span class="highlight">${val}</span>` : val
+            ).join(', ');
+        }
+
+        function startBubbleSort() {
+            bubbleArray = [5, 3, 8, 4, 2];
+            bubbleStep = 0;
+            bubbleI = 0;
+            bubbleJ = 0;
+            displayArray(bubbleArray, 'bubble-array');
+        }
+
+        function nextBubbleStep() {
+            if (bubbleI < bubbleArray.length - 1) {
+                if (bubbleJ < bubbleArray.length - bubbleI - 1) {
+                    if (bubbleArray[bubbleJ] > bubbleArray[bubbleJ + 1]) {
+                        [bubbleArray[bubbleJ], bubbleArray[bubbleJ + 1]] = [bubbleArray[bubbleJ + 1], bubbleArray[bubbleJ]];
+                    }
+                    displayArray(bubbleArray, 'bubble-array', [bubbleJ, bubbleJ + 1]);
+                    bubbleJ++;
+                } else {
+                    bubbleJ = 0;
+                    bubbleI++;
+                }
+            }
+        }
+
+        function resetBubble() {
+            startBubbleSort();
+        }
+    </script>
+</body>
+</html>

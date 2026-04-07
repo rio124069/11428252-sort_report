@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>插入排序法</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .algorithm {
+            background-color: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #555;
+        }
+        .complexity {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .steps {
+            margin: 10px 0;
+        }
+        .array-display {
+            font-family: monospace;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .highlight {
+            background-color: yellow;
+        }
+        a {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #007bff;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>插入排序法 (Insertion Sort)</h1>
+    <div class="algorithm">
+        <p><strong>原理：</strong>插入排序是一種簡單直觀的排序算法。它的工作原理是通過構建有序序列，對於未排序數據，在已排序序列中從後向前掃描，找到相應位置並插入。</p>
+        <div class="steps">
+            <strong>操作步驟：</strong>
+            <ol>
+                <li>從第一個元素開始，該元素可以認為已經被排序。</li>
+                <li>取出下一個元素，在已經排序的元素序列中從後向前掃描。</li>
+                <li>如果該元素（已排序）大於新元素，將該元素移到下一位置。</li>
+                <li>重複步驟3，直到找到已排序的元素小於或者等於新元素的位置。</li>
+                <li>將新元素插入到該位置後。</li>
+                <li>重複步驟2~5。</li>
+            </ol>
+        </div>
+        <div class="complexity">
+            <strong>時間複雜度：</strong> 最壞情況 O(n²)，平均情況 O(n²)，最佳情況 O(n)<br>
+            <strong>空間複雜度：</strong> O(1)
+        </div>
+        <div class="array-display" id="insertion-array">[5, 3, 8, 4, 2]</div>
+        <button onclick="startInsertionSort()">開始排序</button>
+        <button onclick="nextInsertionStep()">下一步</button>
+        <button onclick="resetInsertion()">重置</button>
+    </div>
+    <a href="index.html">返回主頁</a>
+
+    <script>
+        // 插入排序
+        let insertionArray = [5, 3, 8, 4, 2];
+        let insertionStep = 0;
+        let insertionI = 1, insertionJ = 0;
+
+        function displayArray(array, elementId, highlightIndices = []) {
+            const display = document.getElementById(elementId);
+            display.innerHTML = array.map((val, idx) => 
+                highlightIndices.includes(idx) ? `<span class="highlight">${val}</span>` : val
+            ).join(', ');
+        }
+
+        function startInsertionSort() {
+            insertionArray = [5, 3, 8, 4, 2];
+            insertionStep = 0;
+            insertionI = 1;
+            insertionJ = insertionI - 1;
+            displayArray(insertionArray, 'insertion-array');
+        }
+
+        function nextInsertionStep() {
+            if (insertionI < insertionArray.length) {
+                if (insertionJ >= 0 && insertionArray[insertionJ] > insertionArray[insertionJ + 1]) {
+                    [insertionArray[insertionJ], insertionArray[insertionJ + 1]] = [insertionArray[insertionJ + 1], insertionArray[insertionJ]];
+                    displayArray(insertionArray, 'insertion-array', [insertionJ, insertionJ + 1]);
+                    insertionJ--;
+                } else {
+                    insertionI++;
+                    insertionJ = insertionI - 1;
+                }
+            }
+        }
+
+        function resetInsertion() {
+            startInsertionSort();
+        }
+    </script>
+</body>
+</html>
