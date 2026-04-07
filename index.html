@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>排序算法學習</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: linear-gradient(to bottom, #000428, #004e92);
+            color: white;
+            overflow-x: hidden;
+            text-align: center;
+        }
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        .shooting-star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            animation: shoot 3s linear infinite;
+        }
+        @keyframes shoot {
+            0% { transform: translateX(-100vw) translateY(-100vh); opacity: 1; }
+            100% { transform: translateX(100vw) translateY(100vh); opacity: 0; }
+        }
+        h1 {
+            color: white;
+            text-shadow: 0 0 10px #fff;
+        }
+        p {
+            color: white;
+        }
+        .menu {
+            list-style: none;
+            padding: 0;
+        }
+        .menu li {
+            margin: 20px 0;
+        }
+        .menu a {
+            text-decoration: none;
+            color: #007bff;
+            font-size: 18px;
+            padding: 10px 20px;
+            border: 1px solid #007bff;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        .menu a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    <h1>排序算法學習</h1>
+    <p>選擇一個排序算法來學習：</p>
+    <ul class="menu">
+        <li><a href="bubble_sort.html">氣泡排序法</a></li>
+        <li><a href="selection_sort.html">選擇排序法</a></li>
+        <li><a href="insertion_sort.html">插入排序法</a></li>
+        <li><a href="merge_sort.html">合併排序法</a></li>
+        <li><a href="quick_sort.html">快速排序法</a></li>
+    </ul>
+
+    <script>
+        // 生成星空
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = Math.random() * 3 + 'px';
+                star.style.height = star.style.width;
+                star.style.animationDelay = Math.random() * 2 + 's';
+                starsContainer.appendChild(star);
+            }
+            for (let i = 0; i < 5; i++) {
+                const shootingStar = document.createElement('div');
+                shootingStar.className = 'shooting-star';
+                shootingStar.style.left = Math.random() * 100 + '%';
+                shootingStar.style.top = Math.random() * 100 + '%';
+                shootingStar.style.animationDelay = Math.random() * 5 + 's';
+                starsContainer.appendChild(shootingStar);
+            }
+        }
+        createStars();
+    </script>
+</body>
+</html>

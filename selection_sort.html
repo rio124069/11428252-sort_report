@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>選擇排序法</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: linear-gradient(to bottom, #000428, #004e92);
+            color: white;
+            overflow-x: hidden;
+        }
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        .shooting-star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            animation: shoot 3s linear infinite;
+        }
+        @keyframes shoot {
+            0% { transform: translateX(-100vw) translateY(-100vh); opacity: 1; }
+            100% { transform: translateX(100vw) translateY(100vh); opacity: 0; }
+        }
+        h1 {
+            text-align: center;
+            color: white;
+            text-shadow: 0 0 10px #fff;
+        }
+        .algorithm {
+            background-color: rgba(255, 255, 255, 0.1);
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+        }
+        h2 {
+            color: #fff;
+        }
+        .complexity {
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .steps {
+            margin: 10px 0;
+        }
+        .array-display {
+            font-family: monospace;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            color: white;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .highlight {
+            background-color: yellow;
+            color: black;
+        }
+        a {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #007bff;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        th {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <h1>選擇排序法 (Selection Sort)</h1>
+
+    <div class="algorithm">
+        <h2>選擇排序法介紹</h2>
+        <p><strong>原理：</strong>選擇排序是一種簡單直觀的排序算法。它的工作原理是每一次從待排序的數據元素中選出最小（或最大）的一個元素，存放在序列的起始位置，直到全部待排序的數據元素排完。</p>
+        <p><strong>操作方式：</strong>在未排序序列中找到最小元素，存放到排序序列的起始位置。再從剩餘未排序元素中繼續尋找最小元素，然後放到已排序序列的末尾。以此類推，直到所有元素均排序完畢。</p>
+        <p><strong>複雜度分析：</strong>時間複雜度：最壞情況 O(n²)，平均情況 O(n²)，最佳情況 O(n²)；空間複雜度：O(1)。</p>
+    </div>
+
+    <div class="algorithm">
+        <h2>選擇排序演示</h2>
+        <div class="array-display" id="selection-array">[5, 3, 8, 4, 2]</div>
+        <button onclick="startSelectionSort()">開始排序</button>
+        <button onclick="nextSelectionStep()">下一步</button>
+        <button onclick="resetSelection()">重置</button>
+    </div>
+
+    <div class="algorithm">
+        <h2>數據模擬與效能測試</h2>
+        <button onclick="runSimulation()">運行模擬</button>
+        <table id="results-table">
+            <thead>
+                <tr>
+                    <th>陣列大小 (n)</th>
+                    <th>選擇排序時間 (ms)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 結果將動態插入 -->
+            </tbody>
+        </table>
+    </div>
+
+    <a href="index.html">返回主頁</a>
+
+    <script>
+        // 生成星空
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = Math.random() * 3 + 'px';
+                star.style.height = star.style.width;
+                star.style.animationDelay = Math.random() * 2 + 's';
+                starsContainer.appendChild(star);
+            }
+            for (let i = 0; i < 5; i++) {
+                const shootingStar = document.createElement('div');
+                shootingStar.className = 'shooting-star';
+                shootingStar.style.left = Math.random() * 100 + '%';
+                shootingStar.style.top = Math.random() * 100 + '%';
+                shootingStar.style.animationDelay = Math.random() * 5 + 's';
+                starsContainer.appendChild(shootingStar);
+            }
+        }
+        createStars();
+
+        // 選擇排序
+        let selectionArray = [5, 3, 8, 4, 2];
+        let selectionStep = 0;
+        let selectionI = 0, selectionMinIdx = 0;
+
+        function displayArray(array, elementId, highlightIndices = []) {
+            const display = document.getElementById(elementId);
+            display.innerHTML = array.map((val, idx) => 
+                highlightIndices.includes(idx) ? `<span class="highlight">${val}</span>` : val
+            ).join(', ');
+        }
+
+        function startSelectionSort() {
+            selectionArray = [5, 3, 8, 4, 2];
+            selectionStep = 0;
+            selectionI = 0;
+            selectionMinIdx = 0;
+            displayArray(selectionArray, 'selection-array');
+        }
+
+        function nextSelectionStep() {
+            if (selectionI < selectionArray.length - 1) {
+                if (selectionMinIdx === selectionI) {
+                    selectionMinIdx = selectionI;
+                    for (let j = selectionI + 1; j < selectionArray.length; j++) {
+                        if (selectionArray[j] < selectionArray[selectionMinIdx]) {
+                            selectionMinIdx = j;
+                        }
+                    }
+                    displayArray(selectionArray, 'selection-array', [selectionI, selectionMinIdx]);
+                } else {
+                    [selectionArray[selectionI], selectionArray[selectionMinIdx]] = [selectionArray[selectionMinIdx], selectionArray[selectionI]];
+                    displayArray(selectionArray, 'selection-array');
+                    selectionI++;
+                    selectionMinIdx = selectionI;
+                }
+            }
+        }
+
+        function resetSelection() {
+            startSelectionSort();
+        }
+
+        // 排序函數
+        function bubbleSort(arr) {
+            for (let i = 0; i < arr.length; i++) {
+                for (let j = 0; j < arr.length - i - 1; j++) {
+                    if (arr[j] > arr[j + 1]) {
+                        [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+                    }
+                }
+            }
+            return arr;
+        }
+
+        function selectionSort(arr) {
+            for (let i = 0; i < arr.length; i++) {
+                let minIdx = i;
+                for (let j = i + 1; j < arr.length; j++) {
+                    if (arr[j] < arr[minIdx]) minIdx = j;
+                }
+                [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];
+            }
+            return arr;
+        }
+
+        function insertionSort(arr) {
+            for (let i = 1; i < arr.length; i++) {
+                let key = arr[i];
+                let j = i - 1;
+                while (j >= 0 && arr[j] > key) {
+                    arr[j + 1] = arr[j];
+                    j--;
+                }
+                arr[j + 1] = key;
+            }
+            return arr;
+        }
+
+        function mergeSort(arr) {
+            if (arr.length <= 1) return arr;
+            const mid = Math.floor(arr.length / 2);
+            const left = mergeSort(arr.slice(0, mid));
+            const right = mergeSort(arr.slice(mid));
+            return merge(left, right);
+        }
+
+        function merge(left, right) {
+            let result = [];
+            while (left.length && right.length) {
+                if (left[0] < right[0]) result.push(left.shift());
+                else result.push(right.shift());
+            }
+            return result.concat(left, right);
+        }
+
+        function quickSort(arr, low = 0, high = arr.length - 1) {
+            if (low < high) {
+                let pi = partition(arr, low, high);
+                quickSort(arr, low, pi - 1);
+                quickSort(arr, pi + 1, high);
+            }
+            return arr;
+        }
+
+        function partition(arr, low, high) {
+            let pivot = arr[high];
+            let i = low - 1;
+            for (let j = low; j < high; j++) {
+                if (arr[j] < pivot) {
+                    i++;
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+            }
+            [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
+            return i + 1;
+        }
+
+        // 數據模擬
+        function runSimulation() {
+            const sizes = [10, 100, 500, 1000];
+            const resultsBody = document.querySelector('#results-table tbody');
+            resultsBody.innerHTML = '';
+
+            sizes.forEach(size => {
+                const arr = Array.from({length: size}, () => Math.floor(Math.random() * 1000));
+                const selectionArr = arr.slice();
+                const startSelection = performance.now();
+                selectionSort(selectionArr);
+                const endSelection = performance.now();
+                const timeSelection = (endSelection - startSelection).toFixed(3);
+
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${size}</td><td>${timeSelection}</td>`;
+                resultsBody.appendChild(row);
+            });
+        }
+    </script>
+</body>
+</html>
