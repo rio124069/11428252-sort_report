@@ -114,10 +114,43 @@
         th {
             background-color: rgba(255, 255, 255, 0.2);
         }
+        .chart-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            min-height: 220px;
+            padding: 10px;
+            margin: 15px 0;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+        }
+        .bar {
+            flex: 1;
+            position: relative;
+            background: rgba(76, 175, 80, 0.8);
+            border-radius: 6px 6px 0 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            min-width: 16px;
+        }
+        .bar.highlight {
+            background: rgba(255, 152, 0, 0.9);
+        }
+        .bar-label {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            font-size: 12px;
+            color: #fff;
+        }
     </style>
 </head>
-<body>
-    <h1>氣泡排序法 (Bubble Sort)</h1>
 <body>
     <div class="stars" id="stars"></div>
     <h1>氣泡排序法 (Bubble Sort)</h1>
@@ -127,14 +160,6 @@
         <p><strong>原理：</strong>氣泡排序是一種簡單的排序算法。它重複地走訪要排序的數列，一次比較兩個元素，如果它們的順序錯誤就把它們交換過來。走訪數列的工作是重複地進行直到沒有再需要交換，也就是說該數列已經排序完成。</p>
         <p><strong>操作方式：</strong>從數列的第一個元素開始，比較相鄰的元素，如果第一個比第二個大，就交換它們兩個。對每一對相鄰元素做同樣的工作，從開始第一對到結尾的最後一對。重複以上步驟，直到整個數列排序完成。</p>
         <p><strong>複雜度分析：</strong>時間複雜度：最壞情況 O(n²)，平均情況 O(n²)，最佳情況 O(n)；空間複雜度：O(1)。</p>
-    </div>
-
-    <div class="algorithm">
-        <h2>氣泡排序演示</h2>
-        <div class="array-display" id="bubble-array">[5, 3, 8, 4, 2]</div>
-        <button onclick="startBubbleSort()">開始排序</button>
-        <button onclick="nextBubbleStep()">下一步</button>
-        <button onclick="resetBubble()">重置</button>
     </div>
 
     <div class="algorithm">
@@ -151,6 +176,17 @@
                 <!-- 結果將動態插入 -->
             </tbody>
         </table>
+    </div>
+
+    <div class="algorithm">
+        <h2>氣泡排序模擬</h2>
+        <div id="bubble-sim-chart" class="chart-container"></div>
+        <div id="bubble-sim-info" class="steps"></div>
+        <button onclick="initBubbleSimulation()">初始化模擬</button>
+        <button onclick="nextBubbleSimStep()">下一步</button>
+        <button onclick="startBubbleAutoPlay()">自動播放</button>
+        <button onclick="stopBubbleAutoPlay()">停止</button>
+        <button onclick="resetBubbleSimulation()">重置</button>
     </div>
 
     <a href="index.html">返回主頁</a>
@@ -179,45 +215,6 @@
             }
         }
         createStars();
-
-        // 氣泡排序
-        let bubbleArray = [5, 3, 8, 4, 2];
-        let bubbleStep = 0;
-        let bubbleI = 0, bubbleJ = 0;
-
-        function displayArray(array, elementId, highlightIndices = []) {
-            const display = document.getElementById(elementId);
-            display.innerHTML = array.map((val, idx) => 
-                highlightIndices.includes(idx) ? `<span class="highlight">${val}</span>` : val
-            ).join(', ');
-        }
-
-        function startBubbleSort() {
-            bubbleArray = [5, 3, 8, 4, 2];
-            bubbleStep = 0;
-            bubbleI = 0;
-            bubbleJ = 0;
-            displayArray(bubbleArray, 'bubble-array');
-        }
-
-        function nextBubbleStep() {
-            if (bubbleI < bubbleArray.length - 1) {
-                if (bubbleJ < bubbleArray.length - bubbleI - 1) {
-                    if (bubbleArray[bubbleJ] > bubbleArray[bubbleJ + 1]) {
-                        [bubbleArray[bubbleJ], bubbleArray[bubbleJ + 1]] = [bubbleArray[bubbleJ + 1], bubbleArray[bubbleJ]];
-                    }
-                    displayArray(bubbleArray, 'bubble-array', [bubbleJ, bubbleJ + 1]);
-                    bubbleJ++;
-                } else {
-                    bubbleJ = 0;
-                    bubbleI++;
-                }
-            }
-        }
-
-        function resetBubble() {
-            startBubbleSort();
-        }
 
         // 排序函數
         function bubbleSort(arr) {
@@ -312,6 +309,91 @@
                 row.innerHTML = `<td>${size}</td><td>${timeBubble}</td>`;
                 resultsBody.appendChild(row);
             });
+        }
+
+        let bubbleSimArray = [5, 3, 8, 4, 2];
+        let bubbleSimSteps = [];
+        let bubbleSimStepIndex = 0;
+        let bubbleAutoTimer = null;
+
+        function initBubbleSimulation() {
+            bubbleSimArray = [5, 3, 8, 4, 2];
+            bubbleSimSteps = [];
+            bubbleSimStepIndex = 0;
+            recordBubbleSteps(bubbleSimArray.slice());
+            renderBubbleSimulation();
+        }
+
+        function recordBubbleSteps(arr) {
+            bubbleSimSteps.push({ array: arr.slice(), highlight: [], text: '初始陣列' });
+            for (let i = 0; i < arr.length; i++) {
+                for (let j = 0; j < arr.length - i - 1; j++) {
+                    bubbleSimSteps.push({ array: arr.slice(), highlight: [j, j + 1], text: `比較索引 ${j} 和 ${j + 1}` });
+                    if (arr[j] > arr[j + 1]) {
+                        [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+                        bubbleSimSteps.push({ array: arr.slice(), highlight: [j, j + 1], text: `交換索引 ${j} 和 ${j + 1}` });
+                    }
+                }
+            }
+            bubbleSimSteps.push({ array: arr.slice(), highlight: [], text: '排序完成' });
+        }
+
+        function renderBubbleSimulation() {
+            const container = document.getElementById('bubble-sim-chart');
+            const info = document.getElementById('bubble-sim-info');
+            const step = bubbleSimSteps[bubbleSimStepIndex] || { array: bubbleSimArray, highlight: [], text: '' };
+            container.innerHTML = '';
+            const maxValue = Math.max(...step.array, 1);
+            step.array.forEach((value, idx) => {
+                const bar = document.createElement('div');
+                bar.className = 'bar' + (step.highlight.includes(idx) ? ' highlight' : '');
+                bar.style.height = `${(value / maxValue) * 100}%`;
+                bar.innerHTML = `<span class="bar-label">${value}</span>`;
+                container.appendChild(bar);
+            });
+            info.textContent = `步驟 ${bubbleSimStepIndex + 1} / ${bubbleSimSteps.length}：${step.text}`;
+        }
+
+        function nextBubbleSimStep() {
+            if (bubbleSimSteps.length === 0) {
+                initBubbleSimulation();
+                return;
+            }
+            if (bubbleSimStepIndex < bubbleSimSteps.length - 1) {
+                bubbleSimStepIndex++;
+                renderBubbleSimulation();
+            }
+        }
+
+        function resetBubbleSimulation() {
+            bubbleSimStepIndex = 0;
+            if (bubbleSimSteps.length === 0) {
+                initBubbleSimulation();
+                return;
+            }
+            renderBubbleSimulation();
+        }
+
+        function startBubbleAutoPlay() {
+            if (bubbleSimSteps.length === 0) {
+                initBubbleSimulation();
+            }
+            stopBubbleAutoPlay();
+            bubbleAutoTimer = setInterval(() => {
+                if (bubbleSimStepIndex < bubbleSimSteps.length - 1) {
+                    bubbleSimStepIndex++;
+                    renderBubbleSimulation();
+                } else {
+                    stopBubbleAutoPlay();
+                }
+            }, 700);
+        }
+
+        function stopBubbleAutoPlay() {
+            if (bubbleAutoTimer) {
+                clearInterval(bubbleAutoTimer);
+                bubbleAutoTimer = null;
+            }
         }
     </script>
 </body>

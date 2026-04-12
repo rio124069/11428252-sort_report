@@ -114,24 +114,52 @@
         th {
             background-color: rgba(255, 255, 255, 0.2);
         }
+        .chart-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            min-height: 220px;
+            padding: 10px;
+            margin: 15px 0;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+        }
+        .bar {
+            flex: 1;
+            position: relative;
+            background: rgba(76, 175, 80, 0.8);
+            border-radius: 6px 6px 0 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            min-width: 16px;
+        }
+        .bar.highlight {
+            background: rgba(255, 152, 0, 0.9);
+        }
+        .bar-label {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            font-size: 12px;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
     <h1>插入排序法 (Insertion Sort)</h1>
+    <div class="stars" id="stars"></div>
 
     <div class="algorithm">
         <h2>插入排序法介紹</h2>
         <p><strong>原理：</strong>插入排序是一種簡單直觀的排序算法。它的工作原理是通過構建有序序列，對於未排序數據，在已排序序列中從後向前掃描，找到相應位置並插入。</p>
         <p><strong>操作方式：</strong>從第一個元素開始，該元素可以認為已經被排序。取出下一個元素，在已經排序的元素序列中從後向前掃描。如果該元素（已排序）大於新元素，將該元素移到下一位置。重複步驟3，直到找到已排序的元素小於或者等於新元素的位置。將新元素插入到該位置後。重複步驟2~5。</p>
         <p><strong>複雜度分析：</strong>時間複雜度：最壞情況 O(n²)，平均情況 O(n²)，最佳情況 O(n)；空間複雜度：O(1)。</p>
-    </div>
-
-    <div class="algorithm">
-        <h2>插入排序演示</h2>
-        <div class="array-display" id="insertion-array">[5, 3, 8, 4, 2]</div>
-        <button onclick="startInsertionSort()">開始排序</button>
-        <button onclick="nextInsertionStep()">下一步</button>
-        <button onclick="resetInsertion()">重置</button>
     </div>
 
     <div class="algorithm">
@@ -150,12 +178,24 @@
         </table>
     </div>
 
+    <div class="algorithm">
+        <h2>插入排序模擬</h2>
+        <div id="insertion-sim-chart" class="chart-container"></div>
+        <div id="insertion-sim-info" class="steps"></div>
+        <button onclick="initInsertionSimulation()">初始化模擬</button>
+        <button onclick="nextInsertionSimStep()">下一步</button>
+        <button onclick="startInsertionAutoPlay()">自動播放</button>
+        <button onclick="stopInsertionAutoPlay()">停止</button>
+        <button onclick="resetInsertionSimulation()">重置</button>
+    </div>
+
     <a href="index.html">返回主頁</a>
 
     <script>
         // 生成星空
         function createStars() {
             const starsContainer = document.getElementById('stars');
+            if (!starsContainer) return;
             for (let i = 0; i < 100; i++) {
                 const star = document.createElement('div');
                 star.className = 'star';
@@ -176,43 +216,6 @@
             }
         }
         createStars();
-
-        // 插入排序
-        let insertionArray = [5, 3, 8, 4, 2];
-        let insertionStep = 0;
-        let insertionI = 1, insertionJ = 0;
-
-        function displayArray(array, elementId, highlightIndices = []) {
-            const display = document.getElementById(elementId);
-            display.innerHTML = array.map((val, idx) => 
-                highlightIndices.includes(idx) ? `<span class="highlight">${val}</span>` : val
-            ).join(', ');
-        }
-
-        function startInsertionSort() {
-            insertionArray = [5, 3, 8, 4, 2];
-            insertionStep = 0;
-            insertionI = 1;
-            insertionJ = insertionI - 1;
-            displayArray(insertionArray, 'insertion-array');
-        }
-
-        function nextInsertionStep() {
-            if (insertionI < insertionArray.length) {
-                if (insertionJ >= 0 && insertionArray[insertionJ] > insertionArray[insertionJ + 1]) {
-                    [insertionArray[insertionJ], insertionArray[insertionJ + 1]] = [insertionArray[insertionJ + 1], insertionArray[insertionJ]];
-                    displayArray(insertionArray, 'insertion-array', [insertionJ, insertionJ + 1]);
-                    insertionJ--;
-                } else {
-                    insertionI++;
-                    insertionJ = insertionI - 1;
-                }
-            }
-        }
-
-        function resetInsertion() {
-            startInsertionSort();
-        }
 
         // 排序函數
         function bubbleSort(arr) {
@@ -307,6 +310,95 @@
                 row.innerHTML = `<td>${size}</td><td>${timeInsertion}</td>`;
                 resultsBody.appendChild(row);
             });
+        }
+
+        let insertionSimArray = [5, 3, 8, 4, 2];
+        let insertionSimSteps = [];
+        let insertionSimStepIndex = 0;
+        let insertionAutoTimer = null;
+
+        function initInsertionSimulation() {
+            insertionSimArray = [5, 3, 8, 4, 2];
+            insertionSimSteps = [];
+            insertionSimStepIndex = 0;
+            recordInsertionSteps(insertionSimArray.slice());
+            renderInsertionSimulation();
+        }
+
+        function recordInsertionSteps(arr) {
+            insertionSimSteps.push({ array: arr.slice(), highlight: [], text: '初始陣列' });
+            for (let i = 1; i < arr.length; i++) {
+                let key = arr[i];
+                let j = i - 1;
+                insertionSimSteps.push({ array: arr.slice(), highlight: [j, i], text: `準備插入索引 ${i}` });
+                while (j >= 0 && arr[j] > key) {
+                    insertionSimSteps.push({ array: arr.slice(), highlight: [j, j + 1], text: `比較索引 ${j} 和 ${j + 1}` });
+                    arr[j + 1] = arr[j];
+                    insertionSimSteps.push({ array: arr.slice(), highlight: [j, j + 1], text: `移動元素 ${arr[j]} 到位置 ${j + 1}` });
+                    j--;
+                }
+                arr[j + 1] = key;
+                insertionSimSteps.push({ array: arr.slice(), highlight: [j + 1], text: `插入 ${key} 到位置 ${j + 1}` });
+            }
+            insertionSimSteps.push({ array: arr.slice(), highlight: [], text: '排序完成' });
+        }
+
+        function renderInsertionSimulation() {
+            const container = document.getElementById('insertion-sim-chart');
+            const info = document.getElementById('insertion-sim-info');
+            const step = insertionSimSteps[insertionSimStepIndex] || { array: insertionSimArray, highlight: [], text: '' };
+            container.innerHTML = '';
+            const maxValue = Math.max(...step.array, 1);
+            step.array.forEach((value, idx) => {
+                const bar = document.createElement('div');
+                bar.className = 'bar' + (step.highlight.includes(idx) ? ' highlight' : '');
+                bar.style.height = `${(value / maxValue) * 100}%`;
+                bar.innerHTML = `<span class="bar-label">${value}</span>`;
+                container.appendChild(bar);
+            });
+            info.textContent = `步驟 ${insertionSimStepIndex + 1} / ${insertionSimSteps.length}：${step.text}`;
+        }
+
+        function nextInsertionSimStep() {
+            if (insertionSimSteps.length === 0) {
+                initInsertionSimulation();
+                return;
+            }
+            if (insertionSimStepIndex < insertionSimSteps.length - 1) {
+                insertionSimStepIndex++;
+                renderInsertionSimulation();
+            }
+        }
+
+        function resetInsertionSimulation() {
+            insertionSimStepIndex = 0;
+            if (insertionSimSteps.length === 0) {
+                initInsertionSimulation();
+                return;
+            }
+            renderInsertionSimulation();
+        }
+
+        function startInsertionAutoPlay() {
+            if (insertionSimSteps.length === 0) {
+                initInsertionSimulation();
+            }
+            stopInsertionAutoPlay();
+            insertionAutoTimer = setInterval(() => {
+                if (insertionSimStepIndex < insertionSimSteps.length - 1) {
+                    insertionSimStepIndex++;
+                    renderInsertionSimulation();
+                } else {
+                    stopInsertionAutoPlay();
+                }
+            }, 700);
+        }
+
+        function stopInsertionAutoPlay() {
+            if (insertionAutoTimer) {
+                clearInterval(insertionAutoTimer);
+                insertionAutoTimer = null;
+            }
         }
     </script>
 </body>

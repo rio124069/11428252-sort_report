@@ -114,6 +114,41 @@
         th {
             background-color: rgba(255, 255, 255, 0.2);
         }
+        .chart-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            min-height: 220px;
+            padding: 10px;
+            margin: 15px 0;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+        }
+        .bar {
+            flex: 1;
+            position: relative;
+            background: rgba(76, 175, 80, 0.8);
+            border-radius: 6px 6px 0 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            min-width: 16px;
+        }
+        .bar.highlight {
+            background: rgba(255, 152, 0, 0.9);
+        }
+        .bar-label {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            font-size: 12px;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -125,14 +160,6 @@
         <p><strong>原理：</strong>快速排序是一種分治算法。它選擇一個基準元素，將數列分成兩部分，一部分小於基準，一部分大於基準，然後對兩部分遞歸地進行排序。</p>
         <p><strong>操作方式：</strong>選擇一個基準元素（通常是數列的第一個元素）。將數列分成兩部分：小於基準的元素和大於基準的元素。對左右兩部分遞歸地進行快速排序。合併結果。</p>
         <p><strong>複雜度分析：</strong>時間複雜度：最壞情況 O(n²)，平均情況 O(n log n)，最佳情況 O(n log n)；空間複雜度：O(log n)。</p>
-    </div>
-
-    <div class="algorithm">
-        <h2>快速排序演示</h2>
-        <div class="array-display" id="quick-array">[5, 3, 8, 4, 2]</div>
-        <button onclick="startQuickSort()">開始排序</button>
-        <button onclick="nextQuickStep()">下一步</button>
-        <button onclick="resetQuick()">重置</button>
     </div>
 
     <div class="algorithm">
@@ -149,6 +176,17 @@
                 <!-- 結果將動態插入 -->
             </tbody>
         </table>
+    </div>
+
+    <div class="algorithm">
+        <h2>快速排序模擬</h2>
+        <div id="quick-sim-chart" class="chart-container"></div>
+        <div id="quick-sim-info" class="steps"></div>
+        <button onclick="initQuickSimulation()">初始化模擬</button>
+        <button onclick="nextQuickSimStep()">下一步</button>
+        <button onclick="startQuickAutoPlay()">自動播放</button>
+        <button onclick="stopQuickAutoPlay()">停止</button>
+        <button onclick="resetQuickSimulation()">重置</button>
     </div>
 
     <a href="index.html">返回主頁</a>
@@ -179,17 +217,6 @@
         createStars();
 
         // 快速排序
-        let quickArray = [5, 3, 8, 4, 2];
-        let quickSteps = [];
-        let quickStepIndex = 0;
-
-        function displayArray(array, elementId, highlightIndices = []) {
-            const display = document.getElementById(elementId);
-            display.innerHTML = array.map((val, idx) => 
-                highlightIndices.includes(idx) ? `<span class="highlight">${val}</span>` : val
-            ).join(', ');
-        }
-
         function quickSort(arr, low, high) {
             if (low < high) {
                 let pi = partition(arr, low, high);
@@ -212,25 +239,6 @@
             return i + 1;
         }
 
-        function startQuickSort() {
-            quickArray = [5, 3, 8, 4, 2];
-            quickSteps = [];
-            quickStepIndex = 0;
-            displayArray(quickArray, 'quick-array');
-        }
-
-        function nextQuickStep() {
-            if (quickStepIndex === 0) {
-                quickSort(quickArray, 0, quickArray.length - 1);
-                displayArray(quickArray, 'quick-array');
-                quickStepIndex++;
-            }
-        }
-
-        function resetQuick() {
-            startQuickSort();
-        }
-
         // 數據模擬
         function runSimulation() {
             const sizes = [10, 100, 500, 1000];
@@ -248,6 +256,108 @@
                 row.innerHTML = `<td>${size}</td><td>${time}</td>`;
                 resultsBody.appendChild(row);
             });
+        }
+
+        let quickSimArray = [5, 3, 8, 4, 2];
+        let quickSimSteps = [];
+        let quickSimStepIndex = 0;
+        let quickAutoTimer = null;
+
+        function initQuickSimulation() {
+            quickSimArray = [5, 3, 8, 4, 2];
+            quickSimSteps = [];
+            quickSimStepIndex = 0;
+            recordQuickSteps(quickSimArray.slice());
+            renderQuickSimulation();
+        }
+
+        function recordQuickSteps(arr) {
+            quickSimSteps.push({ array: arr.slice(), highlight: [], text: '初始陣列' });
+            quickSortRecord(arr, 0, arr.length - 1);
+            quickSimSteps.push({ array: arr.slice(), highlight: [], text: '排序完成' });
+        }
+
+        function quickSortRecord(arr, low, high) {
+            if (low < high) {
+                const pi = partitionRecord(arr, low, high);
+                quickSortRecord(arr, low, pi - 1);
+                quickSortRecord(arr, pi + 1, high);
+            }
+        }
+
+        function partitionRecord(arr, low, high) {
+            const pivot = arr[high];
+            quickSimSteps.push({ array: arr.slice(), highlight: [high], text: `選取樞軸 ${pivot}（索引 ${high}）` });
+            let i = low - 1;
+            for (let j = low; j < high; j++) {
+                quickSimSteps.push({ array: arr.slice(), highlight: [j, high], text: `比較索引 ${j} 與樞軸` });
+                if (arr[j] < pivot) {
+                    i++;
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                    quickSimSteps.push({ array: arr.slice(), highlight: [i, j], text: `交換索引 ${i} 和 ${j}` });
+                }
+            }
+            [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
+            quickSimSteps.push({ array: arr.slice(), highlight: [i + 1, high], text: `樞軸移至位置 ${i + 1}` });
+            return i + 1;
+        }
+
+        function renderQuickSimulation() {
+            const container = document.getElementById('quick-sim-chart');
+            const info = document.getElementById('quick-sim-info');
+            const step = quickSimSteps[quickSimStepIndex] || { array: quickSimArray, highlight: [], text: '' };
+            container.innerHTML = '';
+            const maxValue = Math.max(...step.array, 1);
+            step.array.forEach((value, idx) => {
+                const bar = document.createElement('div');
+                bar.className = 'bar' + (step.highlight.includes(idx) ? ' highlight' : '');
+                bar.style.height = `${(value / maxValue) * 100}%`;
+                bar.innerHTML = `<span class="bar-label">${value}</span>`;
+                container.appendChild(bar);
+            });
+            info.textContent = `步驟 ${quickSimStepIndex + 1} / ${quickSimSteps.length}：${step.text}`;
+        }
+
+        function nextQuickSimStep() {
+            if (quickSimSteps.length === 0) {
+                initQuickSimulation();
+                return;
+            }
+            if (quickSimStepIndex < quickSimSteps.length - 1) {
+                quickSimStepIndex++;
+                renderQuickSimulation();
+            }
+        }
+
+        function resetQuickSimulation() {
+            quickSimStepIndex = 0;
+            if (quickSimSteps.length === 0) {
+                initQuickSimulation();
+                return;
+            }
+            renderQuickSimulation();
+        }
+
+        function startQuickAutoPlay() {
+            if (quickSimSteps.length === 0) {
+                initQuickSimulation();
+            }
+            stopQuickAutoPlay();
+            quickAutoTimer = setInterval(() => {
+                if (quickSimStepIndex < quickSimSteps.length - 1) {
+                    quickSimStepIndex++;
+                    renderQuickSimulation();
+                } else {
+                    stopQuickAutoPlay();
+                }
+            }, 700);
+        }
+
+        function stopQuickAutoPlay() {
+            if (quickAutoTimer) {
+                clearInterval(quickAutoTimer);
+                quickAutoTimer = null;
+            }
         }
     </script>
 </body>

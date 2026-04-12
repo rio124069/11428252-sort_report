@@ -114,24 +114,52 @@
         th {
             background-color: rgba(255, 255, 255, 0.2);
         }
+        .chart-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            min-height: 220px;
+            padding: 10px;
+            margin: 15px 0;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+        }
+        .bar {
+            flex: 1;
+            position: relative;
+            background: rgba(76, 175, 80, 0.8);
+            border-radius: 6px 6px 0 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            min-width: 16px;
+        }
+        .bar.highlight {
+            background: rgba(255, 152, 0, 0.9);
+        }
+        .bar-label {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            font-size: 12px;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
     <h1>合併排序法 (Merge Sort)</h1>
+    <div class="stars" id="stars"></div>
 
     <div class="algorithm">
         <h2>合併排序法介紹</h2>
         <p><strong>原理：</strong>合併排序是一種分治算法。它將數列分成兩個子數列，對每個子數列進行排序，然後將兩個已排序的子數列合併成一個有序數列。</p>
         <p><strong>操作方式：</strong>將數列分成兩個子數列。對每個子數列遞歸地進行合併排序。將兩個已排序的子數列合併成一個有序數列。</p>
         <p><strong>複雜度分析：</strong>時間複雜度：最壞情況 O(n log n)，平均情況 O(n log n)，最佳情況 O(n log n)；空間複雜度：O(n)。</p>
-    </div>
-
-    <div class="algorithm">
-        <h2>合併排序演示</h2>
-        <div class="array-display" id="merge-array">[5, 3, 8, 4, 2]</div>
-        <button onclick="startMergeSort()">開始排序</button>
-        <button onclick="nextMergeStep()">下一步</button>
-        <button onclick="resetMerge()">重置</button>
     </div>
 
     <div class="algorithm">
@@ -150,12 +178,24 @@
         </table>
     </div>
 
+    <div class="algorithm">
+        <h2>合併排序模擬</h2>
+        <div id="merge-sim-chart" class="chart-container"></div>
+        <div id="merge-sim-info" class="steps"></div>
+        <button onclick="initMergeSimulation()">初始化模擬</button>
+        <button onclick="nextMergeSimStep()">下一步</button>
+        <button onclick="startMergeAutoPlay()">自動播放</button>
+        <button onclick="stopMergeAutoPlay()">停止</button>
+        <button onclick="resetMergeSimulation()">重置</button>
+    </div>
+
     <a href="index.html">返回主頁</a>
 
     <script>
         // 生成星空
         function createStars() {
             const starsContainer = document.getElementById('stars');
+            if (!starsContainer) return;
             for (let i = 0; i < 100; i++) {
                 const star = document.createElement('div');
                 star.className = 'star';
@@ -176,41 +216,6 @@
             }
         }
         createStars();
-
-        // 合併排序 (簡化版本，展示步驟)
-        let mergeArray = [5, 3, 8, 4, 2];
-        let mergeStep = 0;
-
-        function displayArray(array, elementId, highlightIndices = []) {
-            const display = document.getElementById(elementId);
-            display.innerHTML = array.map((val, idx) => 
-                highlightIndices.includes(idx) ? `<span class="highlight">${val}</span>` : val
-            ).join(', ');
-        }
-
-        function startMergeSort() {
-            mergeArray = [5, 3, 8, 4, 2];
-            mergeStep = 0;
-            displayArray(mergeArray, 'merge-array');
-        }
-
-        function nextMergeStep() {
-            // 簡化展示：直接顯示排序後的結果
-            if (mergeStep === 0) {
-                displayArray([3, 5, 8, 4, 2], 'merge-array');
-                mergeStep++;
-            } else if (mergeStep === 1) {
-                displayArray([3, 4, 5, 8, 2], 'merge-array');
-                mergeStep++;
-            } else if (mergeStep === 2) {
-                displayArray([2, 3, 4, 5, 8], 'merge-array');
-                mergeStep++;
-            }
-        }
-
-        function resetMerge() {
-            startMergeSort();
-        }
 
         // 排序函數
         function bubbleSort(arr) {
@@ -305,6 +310,136 @@
                 row.innerHTML = `<td>${size}</td><td>${timeMerge}</td>`;
                 resultsBody.appendChild(row);
             });
+        }
+
+        let mergeSimArray = [5, 3, 8, 4, 2];
+        let mergeSimSteps = [];
+        let mergeSimStepIndex = 0;
+        let mergeAutoTimer = null;
+
+        function initMergeSimulation() {
+            mergeSimArray = [5, 3, 8, 4, 2];
+            mergeSimSteps = [];
+            mergeSimStepIndex = 0;
+            recordMergeSteps(mergeSimArray.slice());
+            renderMergeSimulation();
+        }
+
+        function recordMergeSteps(arr) {
+            const working = arr.slice();
+            mergeSimSteps.push({ array: working.slice(), highlight: [], text: '初始陣列' });
+
+            function mergeRange(start, end) {
+                if (end - start <= 1) return working.slice(start, end);
+                const mid = Math.floor((start + end) / 2);
+                const left = mergeRange(start, mid);
+                const right = mergeRange(mid, end);
+                let i = 0;
+                let j = 0;
+                const merged = [];
+
+                while (i < left.length && j < right.length) {
+                    const leftIdx = start + i;
+                    const rightIdx = mid + j;
+                    mergeSimSteps.push({ array: working.slice(), highlight: [leftIdx, rightIdx], text: `比較元素 ${left[i]} 和 ${right[j]}` });
+                    if (left[i] <= right[j]) {
+                        merged.push(left[i++]);
+                    } else {
+                        merged.push(right[j++]);
+                    }
+                    const temp = working.slice();
+                    for (let k = 0; k < merged.length; k++) {
+                        temp[start + k] = merged[k];
+                    }
+                    mergeSimSteps.push({ array: temp, highlight: [start + merged.length - 1], text: `合併到位置 ${start + merged.length - 1}` });
+                }
+
+                while (i < left.length) {
+                    merged.push(left[i++]);
+                    const temp = working.slice();
+                    for (let k = 0; k < merged.length; k++) {
+                        temp[start + k] = merged[k];
+                    }
+                    mergeSimSteps.push({ array: temp, highlight: [start + merged.length - 1], text: `合併左半段元素 ${merged[merged.length - 1]}` });
+                }
+
+                while (j < right.length) {
+                    merged.push(right[j++]);
+                    const temp = working.slice();
+                    for (let k = 0; k < merged.length; k++) {
+                        temp[start + k] = merged[k];
+                    }
+                    mergeSimSteps.push({ array: temp, highlight: [start + merged.length - 1], text: `合併右半段元素 ${merged[merged.length - 1]}` });
+                }
+
+                for (let k = 0; k < merged.length; k++) {
+                    working[start + k] = merged[k];
+                }
+                const mergedIndices = Array.from({ length: merged.length }, (_, idx) => start + idx);
+                mergeSimSteps.push({ array: working.slice(), highlight: mergedIndices, text: `完成合併段 ${start} 到 ${end - 1}` });
+                return working.slice(start, end);
+            }
+
+            mergeRange(0, working.length);
+            mergeSimSteps.push({ array: working.slice(), highlight: [], text: '排序完成' });
+        }
+
+        function renderMergeSimulation() {
+            const container = document.getElementById('merge-sim-chart');
+            const info = document.getElementById('merge-sim-info');
+            const step = mergeSimSteps[mergeSimStepIndex] || { array: mergeSimArray, highlight: [], text: '' };
+            container.innerHTML = '';
+            const maxValue = Math.max(...step.array, 1);
+            step.array.forEach((value, idx) => {
+                const bar = document.createElement('div');
+                bar.className = 'bar' + (step.highlight.includes(idx) ? ' highlight' : '');
+                bar.style.height = `${(value / maxValue) * 100}%`;
+                bar.innerHTML = `<span class="bar-label">${value}</span>`;
+                container.appendChild(bar);
+            });
+            info.textContent = `步驟 ${mergeSimStepIndex + 1} / ${mergeSimSteps.length}：${step.text}`;
+        }
+
+        function nextMergeSimStep() {
+            if (mergeSimSteps.length === 0) {
+                initMergeSimulation();
+                return;
+            }
+            if (mergeSimStepIndex < mergeSimSteps.length - 1) {
+                mergeSimStepIndex++;
+                renderMergeSimulation();
+            }
+        }
+
+        function resetMergeSimulation() {
+            mergeSimStepIndex = 0;
+            if (mergeSimSteps.length === 0) {
+                initMergeSimulation();
+                return;
+            }
+            renderMergeSimulation();
+        }
+
+        function startMergeAutoPlay() {
+            if (mergeSimSteps.length === 0) {
+                initMergeSimulation();
+            }
+            stopMergeAutoPlay();
+            mergeAutoTimer = setInterval(() => {
+                if (mergeSimStepIndex < mergeSimSteps.length - 1) {
+                    mergeSimStepIndex++;
+                    renderMergeSimulation();
+                } else {
+                    stopMergeAutoPlay();
+                }
+            }, 700);
+        }
+
+        function stopMergeAutoPlay() {
+            if (mergeAutoTimer) {
+                clearInterval(mergeAutoTimer);
+                mergeAutoTimer = null;
+            }
         }
     </script>
 </body>
